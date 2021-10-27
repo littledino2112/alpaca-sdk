@@ -1,0 +1,9 @@
+node_modules
+.vscode/launch.json
+.vscode/settings.json
+.env
+# test coverage
+coverage
+build
+docker/pg/data
+.DS_Store
