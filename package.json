@@ -8,7 +8,7 @@
     "example:calculate-lending-apr": "ts-node ./example/calculate-lending-apr"
   },
   "engines": {
-    "node": "14.16.1"
+    "node": ">=14"
   },
   "dependencies": {
   },
