@@ -5,14 +5,23 @@
   "author": "alpaca-devs",
   "private": true,
   "scripts": {
-    "example:calculate-lending-apr": "ts-node ./example/calculate-lending-apr"
+    "example:calculate-lending-apr": "ts-node ./example/calculate-lending-apr",
+    "example:open-new-position": "npx hardhat --network mainnet run --no-compile ./example/open-new-position.ts"
   },
   "engines": {
     "node": ">=14"
   },
   "dependencies": {
+    "@typechain/ethers-v5": "^8.0.2",
+    "hardhat": "^2.6.8",
+    "hardhat-typechain": "^0.3.5",
+    "typechain": "^6.0.2",
+    "@ethersproject/bignumber": "^5.0.14"
   },
   "devDependencies": {
+    "@alpaca-finance/alpaca-contract": "^1.2.23",
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@alpaca-finance/alpaca-sdk": "0.0.5-beta",
     "@types/node": "^14.14.28",
     "dotenv": "^8.2.0",
     "ethers": "^5.0.31",
@@ -22,7 +31,6 @@
     "solhint-plugin-prettier": "^0.0.5",
     "ts-generator": "^0.1.1",
     "ts-node": "^9.1.1",
-    "typescript": "^4.1.5",
-    "@alpaca-finance/alpaca-sdk": "0.0.5-beta"
+    "typescript": "^4.1.5"
   }
 }
