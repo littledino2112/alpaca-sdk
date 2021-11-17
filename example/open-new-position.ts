@@ -39,7 +39,7 @@ async function main() {
   // We do not supply any farming token (CAKE in this case) here.
   const inputBaseTokenAmount = ethers.utils.parseEther('100')
   const inputFarmingTokenAmount = ethers.utils.parseEther('0')
-  const loanAmount = ethers.utils.parseEther('100')
+  const borrowAmount = ethers.utils.parseEther('100')
 
   //  _____                               
   // |  __ \                              
@@ -88,7 +88,7 @@ async function main() {
     0,
     workerAddress,
     inputBaseTokenAmount,
-    loanAmount,
+    borrowAmount,
     '0',
     ethers.utils.defaultAbiCoder.encode(
       ['address', 'bytes'],
