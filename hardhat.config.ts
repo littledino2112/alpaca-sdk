@@ -18,8 +18,4 @@ module.exports = {
       default: 0,
     },
   },
-  typechain: {
-    outDir: "./typechain",
-    target: process.env.TYPECHAIN_TARGET || "ethers-v5",
-  },
 }
