@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "example:calculate-lending-apr": "ts-node ./example/calculate-lending-apr",
-    "example:calculate-farming-apr": "ts-node ./example/calculate-farming-apr"
+    "example:calculate-farming-apr": "ts-node ./example/calculate-farming-apr",
+    "example:calculate-staking-apr": "ts-node ./example/calculate-staking-apr"
   },
   "engines": {
     "node": ">=14"
