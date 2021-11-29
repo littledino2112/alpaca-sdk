@@ -5,26 +5,19 @@ process.env.ENV = 'prod'
 import {
   LendingPoolCalculatorFactory,
 } from '@alpaca-finance/alpaca-sdk/build-cjs/libs/calculators/LendingPoolCalculator'
-import {
-  StakingPoolCalculatorFactory,
-} from '@alpaca-finance/alpaca-sdk/build-cjs/libs/calculators/StakingPoolCalculator'
 import { vaults } from '@alpaca-finance/alpaca-sdk/build-cjs/constants/vault'
-import {
-  ibStakingPoolsV2,
-} from '@alpaca-finance/alpaca-sdk/build-cjs/constants/stakingPool'
 import { ethers } from 'ethers'
 import { formatEther } from '@ethersproject/units'
 
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org')
-  // const lendingPoolCalculators = await new LendingPoolCalculatorFactory(
-  //   provider,
-  // ).create(...vaults)
-  const stakingPoolCalculators = await new StakingPoolCalculatorFactory(provider).create(...ibStakingPoolsV2)
+  const lendingPoolCalculators = await new LendingPoolCalculatorFactory(
+    provider,
+  ).create(...vaults)
   
-  // lendingPoolCalculators.forEach(cal => {
-  //   console.log('Vault:', cal.vault.name, 'Lending APR:', formatEther(cal.yearlyLendingAPR))
-  // })
+  lendingPoolCalculators.forEach(cal => {
+    console.log('Vault:', cal.vault.name, 'Lending APR:', formatEther(cal.yearlyLendingAPR))
+  })
 }
 
 main()
