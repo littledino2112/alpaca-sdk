@@ -62,14 +62,14 @@ async function main() {
     vaultAddress,
   )
   if (baseTokenAllowance.isZero()) {
-    await baseToken.increaseAllowance(vaultAddress, constants.MaxUint256)
+    await baseToken.approve(vaultAddress, constants.MaxUint256)
   }
   const farmingTokenAllowance = await farmingToken.allowance(
     signer.address,
     vaultAddress,
   )
   if (!inputFarmingTokenAmount.isZero() && farmingTokenAllowance.isZero()) {
-    await farmingToken.increaseAllowance(vaultAddress, constants.MaxUint256)
+    await farmingToken.approve(vaultAddress, constants.MaxUint256)
   }
     
   // __          __        _    
