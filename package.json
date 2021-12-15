@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "example:calculate-lending-apr": "ts-node ./example/calculate-lending-apr",
-    "example:open-new-position": "npx hardhat --network mainnet run --no-compile ./example/open-new-position.ts",
+    "example:open-new-position-cakemaxi": "npx hardhat --network mainnet run --no-compile ./example/open-new-position-cakemaxi.ts",
+    "example:open-new-position-lp": "npx hardhat --network mainnet run --no-compile ./example/open-new-position-lp.ts",
     "example:calculate-staking-apr": "ts-node ./example/calculate-staking-apr"
   },
   "engines": {
