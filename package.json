@@ -8,6 +8,7 @@
     "example:calculate-lending-apr": "ts-node ./example/calculate-lending-apr",
     "example:open-new-position-cakemaxi": "npx hardhat --network mainnet run --no-compile ./example/open-new-position-cakemaxi.ts",
     "example:open-new-position-lp": "npx hardhat --network mainnet run --no-compile ./example/open-new-position-lp.ts",
+    "example:calculate-farming-apr": "ts-node ./example/calculate-farming-apr",
     "example:calculate-staking-apr": "ts-node ./example/calculate-staking-apr"
   },
   "engines": {
@@ -23,7 +24,7 @@
   "devDependencies": {
     "@alpaca-finance/alpaca-contract": "^1.2.23",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
-    "@alpaca-finance/alpaca-sdk": "0.0.5-beta",
+    "@alpaca-finance/alpaca-sdk": "0.0.7-beta",
     "@types/node": "^14.14.28",
     "dotenv": "^8.2.0",
     "ethers": "^5.0.31",
