@@ -6,49 +6,49 @@ import {
   Vault__factory,
   IWorker__factory,
   BEP20__factory,
+  PancakePair__factory,
 } from '@alpaca-finance/alpaca-contract/typechain'
-import { AddAllBaseTokenStrategy, TwoSideOptimalStrategy } from '@alpaca-finance/alpaca-sdk/build-cjs/entity/Strategy'
+import {
+  AddAllBaseTokenStrategy,
+  TwoSideOptimalStrategy,
+} from '@alpaca-finance/alpaca-sdk/build-cjs/entity/Strategy'
+import {
+  FarmInteractionCalculator,
+  IData,
+} from '@alpaca-finance/alpaca-sdk/build-cjs/libs/calculators/FarmInteractionCalculator'
 import { formatEther } from '@ethersproject/units'
-import { ethers } from 'hardhat'
+import { ethers, network } from 'hardhat'
 import { BigNumber, constants } from 'ethers'
 
 async function main() {
   const OpenPositionGasLimit = BigNumber.from('2700000')
   const signer = (await ethers.getSigners())[0]
-  console.log('signer', signer.address)
 
- // _____                               _                
- // |  __ \                             | |               
- // | |__) |_ _ _ __ __ _ _ __ ___   ___| |_ ___ _ __ ___ 
- // |  ___/ _` | '__/ _` | '_ ` _ \ / _ \ __/ _ \ '__/ __|
- // | |  | (_| | | | (_| | | | | | |  __/ ||  __/ |  \__ \
- // |_|   \__,_|_|  \__,_|_| |_| |_|\___|\__\___|_|  |___/
-                                                        
-  const vaultAddress = '0xe5ed8148fE4915cE857FC648b9BdEF8Bb9491Fa5' // BUSD Vault
-  const workerAddress = '0x8164104FeaA27Ac52d7CD22D63a5Ef50971cB7ff' // ALPACA-BUSD PancakeswapWorker
-  const strategyAddress = '0x22fC6110d5d9b122f3C2d4715C24566342161a12' // ALPACA-BUSD PancakeswapWorker.strategies.StrategyAddTwoSidesOptimal
+  // _____                               _
+  // |  __ \                             | |
+  // | |__) |_ _ _ __ __ _ _ __ ___   ___| |_ ___ _ __ ___
+  // |  ___/ _` | '__/ _` | '_ ` _ \ / _ \ __/ _ \ '__/ __|
+  // | |  | (_| | | | (_| | | | | | |  __/ ||  __/ |  \__ \
+  // |_|   \__,_|_|  \__,_|_| |_| |_|\___|\__\___|_|  |___/
 
-  // `minLPAmount` is for slippage control
-  // by specifying it as `0` this would mean the user is willing to accept any amount of LP token received
-  // this could proven to be dangerous for price manipulation attack, we put it as `0` here for the simplicity of the code example
-  // Alpaca Finance frontend would calculate this value based on the current price with some percentage of slippage tolerance
-  const minLPAmount = '0'
+  const vaultAddress = '0x7C9e73d4C71dae564d41F78d56439bB4ba87592f' // BUSD Vault
+  const workerAddress = '0x4BfE9489937d6C0d7cD6911F1102c25c7CBc1B5A' // ALPACA-BUSD PancakeswapWorker
+  const strategyAddress = '0x3fC149995021f1d7AEc54D015Dad3c7Abc952bf0' // ALPACA-BUSD PancakeswapWorker.strategies.StrategyAddTwoSidesOptimal
 
   // In this example, we are opening a new position on ALPACA-BUSD PancakeSwap Farm with BUSD as borrowing asset
   // We will farm this position with our 100 BUSD and 100 ALPACA principal and we will borrow 100 BUSD from Alpaca Finance's Lending Vault
   const inputBaseTokenAmount = ethers.utils.parseEther('100')
-  const inputFarmingTokenAmount = ethers.utils.parseEther('100')
-  console.log('inputFarmingTokenAmount', inputFarmingTokenAmount)
+  const inputFarmingTokenAmount = ethers.utils.parseEther('0')
   const borrowAmount = ethers.utils.parseEther('100')
 
-  //  _____                               
-  // |  __ \                              
-  // | |__) | __ ___ _ __   __ _ _ __ ___ 
+  //  _____
+  // |  __ \
+  // | |__) | __ ___ _ __   __ _ _ __ ___
   // |  ___/ '__/ _ \ '_ \ / _` | '__/ _ \
   // | |   | | |  __/ |_) | (_| | | |  __/
   // |_|   |_|  \___| .__/ \__,_|_|  \___|
-  //                | |                   
-  //                |_|                   
+  //                | |
+  //                |_|
   const vault = Vault__factory.connect(vaultAddress, signer)
   const worker = IWorker__factory.connect(workerAddress, signer)
   const baseToken = BEP20__factory.connect(await worker.baseToken(), signer)
@@ -71,18 +71,45 @@ async function main() {
   if (!inputFarmingTokenAmount.isZero() && farmingTokenAllowance.isZero()) {
     await farmingToken.approve(vaultAddress, constants.MaxUint256)
   }
-    
-  // __          __        _    
-  // \ \        / /       | |   
+
+  const lpPair = PancakePair__factory.connect(await worker.lpToken(), signer)
+  const token0 = await lpPair.token0()
+  const reserves = await lpPair.getReserves()
+
+  const slippageCalculator = new FarmInteractionCalculator({
+    _data: {
+      baseAddress: baseToken.address,
+      farmAddress: farmingToken.address,
+      baseReserve: token0 == baseToken.address ? reserves[0] : reserves[1],
+      farmReserve: token0 == farmingToken.address ? reserves[0] : reserves[1],
+      lpTotalSupply: await lpPair.totalSupply(),
+      tradingFeeBps: BigNumber.from(9975),
+    },
+  })
+
+  // `minLPAmount` is for slippage control
+  const { minLpAmount } = slippageCalculator.calculateOpenPositionParams({
+    inputBaseAmount: inputBaseTokenAmount,
+    inputFarmAmount: inputFarmingTokenAmount,
+    borrowingBaseAmount: borrowAmount,
+    slippageBps: BigNumber.from(25),
+  })
+
+  // __          __        _
+  // \ \        / /       | |
   //  \ \  /\  / /__  _ __| | __
   //   \ \/  \/ / _ \| '__| |/ /
-  //    \  /\  / (_) | |  |   < 
+  //    \  /\  / (_) | |  |   <
   //     \/  \/ \___/|_|  |_|\_\
 
   const nextPositionID = await vault.nextPositionID()
 
-  const encodedStrategyParams = new TwoSideOptimalStrategy().encodeStrategyParams(inputFarmingTokenAmount.toString(), minLPAmount)
-    console.log('encodedStrategyParams', encodedStrategyParams)
+  const encodedStrategyParams =
+    new TwoSideOptimalStrategy().encodeStrategyParams(
+      inputFarmingTokenAmount.toString(),
+      minLpAmount.toString(),
+    )
+
   const result = await vault.work(
     0,
     workerAddress,
@@ -99,8 +126,39 @@ async function main() {
     },
   )
   const newPosition = await vault.positionInfo(nextPositionID)
-  console.log('newPosition value', newPosition[0].toString())
-  console.log('newPosition debt', newPosition[1].toString())
+
+  // Fully Close and Convert All this position
+  const positionId = (await vault.nextPositionID()).sub(1)
+  const closeStrategyAddress = '0x9Da5D593d08B062063F81913a08e04594F84d438'
+  const { minReceivingBaseAmount } =
+    slippageCalculator.calculateEntirelyCloseLiquidateAllPositionParams({
+      equityInBase: await worker.health(positionId),
+      debtInBase: borrowAmount,
+      slippageBps: BigNumber.from(25),
+    })
+
+  const encodeType = ['uint256']
+  const data = [minReceivingBaseAmount]
+
+  const closeStrategyEncodedParams = ethers.utils.defaultAbiCoder.encode(
+    encodeType,
+    data,
+  )
+  await vault.work(
+    positionId,
+    workerAddress,
+    inputBaseTokenAmount,
+    '0',
+    ethers.constants.MaxUint256,
+    ethers.utils.defaultAbiCoder.encode(
+      ['address', 'bytes'],
+      [closeStrategyAddress, closeStrategyEncodedParams],
+    ),
+    {
+      gasLimit: OpenPositionGasLimit,
+      value: '0',
+    },
+  )
 }
 
 main()
