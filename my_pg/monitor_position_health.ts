@@ -37,16 +37,23 @@ async function get_position_health() {
 
     // Get position info
     const positionId = 4071;
-    var position_data: any[] = new Array();
-    (await vault.positionInfo(positionId)).forEach( res => {
-        position_data.push(utils.formatEther(res))
-        // console.log("result = ", utils.formatEther(res))
-    })
+    var position_data = await vault.positionInfo(positionId);
+    // (await vault.positionInfo(positionId)).forEach( res => {
+    //     position_data.push(utils.formatEther(res))
+    //     // console.log("result = ", utils.formatEther(res))
+    // })
 
     // Position health
-    const position_debt = position_data[1]/position_data[0]
-    console.log("Position debt ratio: ", position_debt);
+    const total :any = utils.formatEther(position_data[0])
+    const debt :any = utils.formatEther(position_data[1])
+    const position_debt = debt/total;
+    const ts = new Date(new Date().getTime() + 7*60*60*1000) // Convert to local timestamp
+    console.log(ts, "- ", "Equity: ", total-debt ,", Debt ratio: ", position_debt);
 }
 
-const interval = 5*60*1000  // in ms
-setInterval(get_position_health, interval)
+// const interval = 1*60*1000  // in m
+// setInterval(get_position_health, interval)
+get_position_health()
+.then(
+    () => process.exit(0)
+)
