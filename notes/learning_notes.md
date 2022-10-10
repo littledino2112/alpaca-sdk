@@ -1,0 +1,2 @@
+- Vault smart contract can be used to query information about an open position. To get this information, the signer doesn't have to be from the wallet that owns the position
+- 
