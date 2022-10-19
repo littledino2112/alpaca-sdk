@@ -19,6 +19,7 @@ import {
 import {ethers} from 'hardhat'
 import {utils, constants} from 'ethers'
 import { getVaultByAddress, vaults } from '@alpaca-finance/alpaca-sdk/build-cjs/constants/vault'
+import SpookyPairAbi from "../contracts_abi/SpookyPair.json"
 
 async function main(){
     // Get signer
@@ -68,8 +69,14 @@ async function main(){
     }
 
     // Connect to Spooky contract
-    console.log("LP token address on Spooky: ", await worker.lpToken())
-    // const lpPair = SpookyToken__factory.connect(await worker.lpToken(), signer)
+    const lpAddr = await worker.lpToken()
+    console.log("LP token address on Spooky: ", lpAddr)
+    const spookyPair = new ethers.Contract(lpAddr, SpookyPairAbi, signer)
+    const token0 = await spookyPair.token0()
+    const reserves = await spookyPair.getReserves()
+    console.log("Token0: ", token0)
+    console.log("Token0 reserve: ", utils.formatEther(reserves[0]))
+    console.log("Token1 reserve: ", utils.formatEther(reserves[1]))
 }
 
 main()
